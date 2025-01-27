@@ -7,16 +7,17 @@
 
 
 
-# In[5]:
+# In[1]:
 
 
 import json
 #import numpy as np
 import os
+import time
 from typing import Optional
 #from tqdm.notebook import tqdm
 
-#import cv2
+import cv2
 import pandas as pd
 
 
@@ -26,7 +27,7 @@ import pandas as pd
 
 
 
-# In[10]:
+# In[2]:
 
 
 DATA_PATH = os.path.join('.', 'data')
@@ -44,19 +45,19 @@ DATA_PATH = os.path.join('.', 'data')
 
 
 
-# In[15]:
+# In[3]:
 
 
-COLS = ['map_name', 'battle_type', 'sub_number', 
-                    'hard_level', 'tank_levels', 'base', 
-                    'duration', 
-                    'battle_start', 'countdown', 
-                    'battle_end', 'results',
-                    'parent_map',
-                   ]
+COLS = ['map_name', 'battle_type', 'sub_number',
+        'hard_level', 'tank_levels', 'base',
+        'duration', 'frame_count',
+        'battle_start', 'countdown',
+        'battle_end', 'results',
+        'parent_map',
+]
 
 
-# In[16]:
+# In[4]:
 
 
 class MapPrepareClass():
@@ -148,26 +149,30 @@ class MapPrepareClass():
         tmp_df = pd.DataFrame(columns=COLS, index=range(len(maps_to_add)))
         idx = 0
         for el in maps_to_add:
-            map_name, map_type = self.get_map_name_type(el)
-            print(map_name, map_type)
+            info = self.get_video_info(el)
+            map_name = info['map_name']
+            battle_type = info['battle_type']
+            print(map_name, battle_type)
             #subnumber = self.__max_subidx["_".join((map_name, map_type))]
-            if "_".join((map_name, map_type)) not in self.__max_subidx.keys():
-                add = self.__add_new_map_bt_dialogue(map_name, map_type)
+            if "_".join((map_name, battle_type)) not in self.__max_subidx.keys():
+                add = self.__add_new_map_bt_dialogue(map_name, battle_type)
                 if not add:
                     continue
                 else:
-                    self.__max_subidx["_".join((map_name, map_type))] = 0
+                    self.__max_subidx["_".join((map_name, battle_type))] = 0
                 
-            subnumber = self.__max_subidx["_".join((map_name, map_type))]
-            tmp_df.loc[idx] = {'map_name': map_name,
-                               'battle_type': map_type, 
-                               'sub_number':  subnumber,
-                              }
-            self.__max_subidx['_'.join((map_name, map_type))] += 1
-            new_filename = f'{map_name}_{map_type}_{str(subnumber).zfill(5)}.mp4'
-            #os.rename(os.path.join(self.__NEW_VIDEO_PATH, el), 
-            #          os.path.join(self.__NEW_VIDEO_PATH,new_filename)
-            #         )
+            subnumber = self.__max_subidx["_".join((map_name, battle_type))]
+            #tmp_df.loc[idx] = {'map_name': map_name,
+            #                   'battle_type': map_type, 
+            #                   'sub_number':  subnumber,
+            #                  }
+            info['sub_number'] = subnumber
+            tmp_df.loc[idx] = info
+            self.__max_subidx['_'.join((map_name, battle_type))] += 1
+            new_filename = f'{map_name}_{battle_type}_{str(subnumber).zfill(5)}.mp4'
+            os.rename(os.path.join(self.__NEW_VIDEO_PATH, el), 
+                      os.path.join(self.__NEW_VIDEO_PATH, new_filename)
+                     )
             idx += 1
 
         tmp_df.dropna(axis=0, how='all', inplace=True)
@@ -184,18 +189,25 @@ class MapPrepareClass():
 
 
 
-    def get_map_name_type(self, inp_video) -> (str, str):
+    def get_video_info(self, inp_filename: str) -> dict:
         # rewwrite to getting from video frames
-        ret_name = inp_video.split('.')[0]. \
-                             split('_')[:-1]
-        ret_name = '_'.join(ret_name).lower()
-        ret_type = inp_video.split('.')[0]. \
-                             split('_')[-1].\
-                             split('(')[0].\
-                             strip().\
-                             lower()
+        ret = {el: '' for el in COLS}
+        
+        tmp = inp_filename.split('.')[0]. \
+                           split('_')[:-1]
+        ret['map_name'] = '_'.join(tmp).lower()
+        ret['battle_type'] = inp_filename.split('.')[0]. \
+                                          split('_')[-1].\
+                                          split('(')[0].\
+                                          strip().\
+                                          lower()
 
-        return ret_name, ret_type
+        tmp = cv2.VideoCapture(os.path.join(self.__NEW_VIDEO_PATH, inp_filename))
+        ret['frame_count'] = int(tmp.get(cv2.CAP_PROP_FRAME_COUNT))
+        tmp.release()
+        time.sleep(0.1)
+        
+        return ret
 
 
 # In[ ]:
@@ -204,28 +216,52 @@ class MapPrepareClass():
 
 
 
-# In[ ]:
+# In[5]:
 
 
+#COLS
 
 
-
-# In[17]:
+# In[6]:
 
 
 map_prepare = MapPrepareClass()
 
 
-# In[18]:
+# In[7]:
 
 
 map_prepare.set_add_all(True)
 
 
-# In[19]:
+# In[8]:
 
 
 map_prepare.add_initial_maps()
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[9]:
+
+
+41-16
 
 
 # In[ ]:
