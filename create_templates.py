@@ -7,7 +7,7 @@
 
 
 
-# In[2]:
+# In[ ]:
 
 
 import os
@@ -33,7 +33,7 @@ from tqdm.notebook import tqdm
 
 
 
-# In[3]:
+# In[ ]:
 
 
 class CreateTemplatesClass():
@@ -41,6 +41,7 @@ class CreateTemplatesClass():
                        inp_video_path: Optional[str]='', 
                        inp_templates_path: Optional[str]='', 
                 ) -> None:
+
         if inp_data_path != '':
             self.__DATA_PATH = inp_data_path
         else:
@@ -125,7 +126,7 @@ class CreateTemplatesClass():
                         inp_type: str,
                         max_idx: Optional[int] = 2000,
                         inp_sub_path: Optional[str] = '', 
-                        max_file_idx: Optional[int] = 20, 
+                        max_file_idx: Optional[int] = 40, 
                        ) -> int:
     
     
@@ -159,19 +160,21 @@ class CreateTemplatesClass():
             else:
                 start_time = el[1]['battle_end']
                 end_time = el[1]['duration']
-    
+
+            #print(f'from {start_time} to {end_time}')
             video = cv2.VideoCapture(os.path.join(self.__VIDEO_PATH, filename))
             fps = video.get(cv2.CAP_PROP_FPS)
             max_frames = video.get(cv2.CAP_PROP_FRAME_COUNT)
     
             file_idx = 0
-            for index in tqdm(range(start_time + 1, (end_time - 1)*3),  
+            for index in tqdm(range((start_time + 1)*3, (end_time - 1)*3),  
                               desc=filename, disable = self.__tqdm_disable,
                               leave=False):
                 offset = int(index * fps / 3)
                 if offset > max_frames:
                     print(f'Too big offset {offset} vs {max_frames}')
                     continue
+                #print(f'{index} and {offset}')
     
                 video.set(cv2.CAP_PROP_POS_FRAMES, offset)
                 _, frame = video.read()
@@ -183,8 +186,11 @@ class CreateTemplatesClass():
     
                 idx += 1
                 file_idx += 1
-                if (max_idx > 0 and idx >= max_idx) or \
-                    file_idx > max_file_idx:
+                if file_idx > max_file_idx:
+                    #print('exit on max file idx')
+                    break
+                
+                if (max_idx > 0 and idx >= max_idx):
                     print('exit on max idx')
                     return 0
             
@@ -229,7 +235,7 @@ class CreateTemplatesClass():
 
 
 
-# In[4]:
+# In[ ]:
 
 
 crete_templates = CreateTemplatesClass()
@@ -237,19 +243,19 @@ crete_templates = CreateTemplatesClass()
 
 # Загружаю имена всех карт
 
-# In[5]:
+# In[ ]:
 
 
 crete_templates.preload_info()
 
 
-# In[5]:
+# In[ ]:
 
 
 #crete_templates.get_param('__ALL_MAP_NAMES')
 
 
-# In[6]:
+# In[ ]:
 
 
 #crete_templates.get_param('__map_info_df')
@@ -270,7 +276,7 @@ crete_templates.preload_info()
 #                     max_file_idx: Optional[int] = 20,  
 #                    ) -> int:
 
-# In[7]:
+# In[ ]:
 
 
 BATTLE_TYPES = ['assault', 'counter', 'standart']
@@ -291,24 +297,43 @@ crete_templates.create_aver_template(path)
 
 
 
+# In[ ]:
+
+
+
+
+
+# crete_templates.generate_frames('all', 0, 'battle_data_start_allies', inp_sub_path='battle_data_start_allies')
+# crete_templates.generate_frames('all', 0, 'battle_data_start_enemies', inp_sub_path='battle_data_start_enemies')
+
+# In[ ]:
+
+
+
+
+
 # 
 
-# In[8]:
+# In[ ]:
 
 
-crete_templates.generate_frames('all', 0, 'battle_data_start_allies',)
-crete_templates.generate_frames('all', 0, 'battle_data_start_enemies',)
-crete_templates.generate_frames('all', 0, 'start_frame',)
-crete_templates.generate_frames('all', 1, 'map_upper_plank',)
-
-
-# In[9]:
-
-
+crete_templates.generate_frames('all', 0, 'start_frame', inp_sub_path='start_frame')
 crete_templates.generate_frames('all', 1, 'map_upper_plank', inp_sub_path='map_upper_plank')
 
 
-# In[6]:
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
 
 
 path = os.path.join('.', 'data', 'tmp', 'map_upper_plank')
