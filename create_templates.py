@@ -7,7 +7,7 @@
 
 
 
-# In[1]:
+# In[2]:
 
 
 import os
@@ -17,11 +17,8 @@ import pandas as pd
 
 from typing import Optional
 
-
-# In[ ]:
-
-
-
+import cv2
+from tqdm.notebook import tqdm
 
 
 # In[ ]:
@@ -30,7 +27,13 @@ from typing import Optional
 
 
 
-# In[2]:
+# In[ ]:
+
+
+
+
+
+# In[3]:
 
 
 class CreateTemplatesClass():
@@ -53,6 +56,10 @@ class CreateTemplatesClass():
         else:
             self.__TEMPLATES_PATH = os.path.join(self.__DATA_PATH, 'templates')
 
+        if not os.path.exists(os.path.join(self.__DATA_PATH, 'tmp')):
+            os.mkdir(os.path.join(self.__DATA_PATH, 'tmp'))
+        self.__TMP_FRAMES = os.path.join(self.__DATA_PATH, 'tmp')
+            
         self.__tqdm_disable = False
 
 
@@ -123,9 +130,9 @@ class CreateTemplatesClass():
     
     
         if inp_sub_path != '':
-            path_to_save = os.path.join(TEST_FRAMES, inp_sub_path)
+            path_to_save = os.path.join(self.__TMP_FRAMES, inp_sub_path)
         else:
-            path_to_save = os.path.join(TEST_FRAMES, inp_map)
+            path_to_save = os.path.join(self.__TMP_FRAMES, inp_map)
         print(path_to_save)
     
         if not os.path.exists(path_to_save):
@@ -136,11 +143,11 @@ class CreateTemplatesClass():
                 return -1
     
         idx = 0
-        for el in self.__map_info_df.iterrows():
-            filename = f'{el[1]["map_name"]}_{el[1]["battle_type"]}.mp4'
+        for el in self.__map_info_df.sample(frac=1).iterrows():
+            filename = f'{el[1]["map_name"]}_{el[1]["battle_type"]}_{el[1]["sub_number"]:05d}.mp4'
             if inp_map.lower() != 'all':
                 if not inp_map.lower() in filename:
-                    print(f'Пропускаю {filename}')
+                    #print(f'Пропускаю {filename}')
                     continue
     
             if start == 0: 
@@ -168,7 +175,7 @@ class CreateTemplatesClass():
     
                 video.set(cv2.CAP_PROP_POS_FRAMES, offset)
                 _, frame = video.read()
-                frame = cut_frame(frame, inp_type)
+                frame = self.cut_frame(frame, inp_type)
                 if inp_sub_path != '':
                     cv2.imwrite(os.path.join(path_to_save, f'{inp_sub_path}_{idx}.png'), frame)
                 else:
@@ -185,19 +192,35 @@ class CreateTemplatesClass():
 
 
 
-        def create_aver(self, inp_path: str):
+    def create_aver_template(self, inp_path: str):
 
-            if not os.oath.exists(inp_path):
-                print('Заланный путь не сушествует / Не ыерно задан путь.')
-                return -1
+        if not os.path.exists(inp_path):
+            print('Заланный путь не сушествует / Не ыерно задан путь.')
+            return -1
 
-            all_files = os.listdir(inp_path)
-            if len(all_files) == 0:
-                print('Пустая папка. Нет кадров для усреднения.')
-                return -1
+        filelist = [file for file in os.listdir(inp_path) if file.endswith('.png')]
+        if len(filelist) == 0:
+            print('Пустая папка. Нет кадров для усреднения.')
+            return -1
 
-            
-            return 0
+        filename = inp_path.split('\\')[-1] + '_template.png'
+    
+        frame = cv2.imread(os.path.join(path, filelist[0]))
+        shape = (len(filelist), frame.shape[0], frame.shape[1], frame.shape[2])
+        all_frames = np.zeros(shape)
+    
+        for idx, el in tqdm(enumerate(filelist), total=len(filelist), 
+                            disable = self.__tqdm_disable,
+                           ):
+            frame = cv2.imread(os.path.join(inp_path, el))
+            all_frames[idx] = frame
+    
+        aver_frame = np.mean(all_frames, axis = 0)
+        aver_frame = aver_frame.astype(np.uint8)
+        
+        cv2.imwrite(os.path.join(self.__TEMPLATES_PATH, filename), aver_frame)
+
+        return 0
 
 
 # In[ ]:
@@ -206,7 +229,7 @@ class CreateTemplatesClass():
 
 
 
-# In[3]:
+# In[4]:
 
 
 crete_templates = CreateTemplatesClass()
@@ -214,19 +237,19 @@ crete_templates = CreateTemplatesClass()
 
 # Загружаю имена всех карт
 
-# In[4]:
+# In[5]:
 
 
 crete_templates.preload_info()
 
 
-# In[7]:
+# In[5]:
 
 
 #crete_templates.get_param('__ALL_MAP_NAMES')
 
 
-# In[8]:
+# In[6]:
 
 
 #crete_templates.get_param('__map_info_df')
@@ -247,15 +270,53 @@ crete_templates.preload_info()
 #                     max_file_idx: Optional[int] = 20,  
 #                    ) -> int:
 
-# In[11]:
+# In[7]:
 
 
 BATTLE_TYPES = ['assault', 'counter', 'standart']
+
+for el in tqdm(BATTLE_TYPES):
+    crete_templates.generate_frames(el, 0, 'battle_type', max_file_idx=200)
+    crete_templates.generate_frames(el, 0, 'battle_type_icon', max_file_idx=200)
+# In[ ]:
+
+
+
+
+path = os.path.join('.', 'data', 'tmp', 'counter')
+crete_templates.create_aver_template(path)
+# In[ ]:
+
+
+
+
+
+# 
+
+# In[8]:
+
+
+crete_templates.generate_frames('all', 0, 'battle_data_start_allies',)
+crete_templates.generate_frames('all', 0, 'battle_data_start_enemies',)
+crete_templates.generate_frames('all', 0, 'start_frame',)
+crete_templates.generate_frames('all', 1, 'map_upper_plank',)
+
+
+# In[9]:
+
+
+crete_templates.generate_frames('all', 1, 'map_upper_plank', inp_sub_path='map_upper_plank')
+
+
+# In[6]:
+
+
+path = os.path.join('.', 'data', 'tmp', 'map_upper_plank')
+crete_templates.create_aver_template(path)
 
 
 # In[ ]:
 
 
-for el in BATTLE_TYPES:
-    crete_templates.generate_frames(, )
+
 

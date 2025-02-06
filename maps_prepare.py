@@ -81,7 +81,7 @@ class MapPrepareClass():
             print(f'created path: {self.__NEW_VIDEO_PATH}')
 
         self.__add_all = False
-        pass
+
 
 
 
@@ -91,6 +91,14 @@ class MapPrepareClass():
 
 
 
+    def get_param(self, param_name: str):
+        if f'_MapPrepareClass{param_name}' in self.__dict__.keys():
+            return self.__dict__[f'_MapPrepareClass{param_name}']
+        else:
+           return 'У класса нат запрашиваемого параметра.'
+
+
+    
     def __calc_max_subnumbers(self, is_new: bool = True):
 
         if is_new:
@@ -102,7 +110,7 @@ class MapPrepareClass():
                 with open(os.path.join(DATA_PATH, 'max_subidx.json'), 'r+') as fd:
                     self.__max_subidx = json.load(fd)
             else:
-                print('error: map_status.json is absent!')
+                print('Ошибка: map_status.json отсутствует.')
 
         return 0
 
@@ -136,7 +144,7 @@ class MapPrepareClass():
 
         maps_to_add = os.listdir(self.__NEW_VIDEO_PATH)
         if len(maps_to_add) == 0:
-            print('Nothing to add')
+            print('Отсутствуют карты для добавления.')
             return 0
 
         if os.path.exists(os.path.join(DATA_PATH, 'prepared_maps_info.csv')):
@@ -177,7 +185,6 @@ class MapPrepareClass():
 
         tmp_df.dropna(axis=0, how='all', inplace=True)
         prepared_maps_info = pd.concat((prepared_maps_info, tmp_df))
-        #print(tmp)
         #print(self.__max_subidx)
         with open(os.path.join(DATA_PATH, 'max_subidx.json'), 'w') as fd:
             json.dump(self.__max_subidx, fd)
@@ -244,24 +251,6 @@ map_prepare.add_initial_maps()
 
 
 
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[9]:
-
-
-41-16
 
 
 # In[ ]:
