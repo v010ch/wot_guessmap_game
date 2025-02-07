@@ -124,7 +124,7 @@ class CreateTemplatesClass():
                         inp_map: str, 
                         start: int, 
                         inp_type: str,
-                        max_idx: Optional[int] = 2000,
+                        max_idx: Optional[int] = 3000,
                         inp_sub_path: Optional[str] = '', 
                         max_file_idx: Optional[int] = 40, 
                        ) -> int:
@@ -229,6 +229,24 @@ class CreateTemplatesClass():
         return 0
 
 
+
+    def check_info(self):
+
+        missed_files = []
+        for row in self.__map_info_df.iterrows():
+            filename = f'{row[1]["map_name"]}_{row[1]["battle_type"]}_{row[1]["sub_number"]:05d}.mp4'
+            filepath = os.path.join(self.__VIDEO_PATH, filename)
+
+            if not os.path.exists(filepath):
+                missed_files.append(filename)
+
+        if len(missed_files) > 0:
+            missed_files = sorted(missed_files)
+            return -1, missed_files
+
+        return 0, []
+
+
 # In[ ]:
 
 
@@ -300,12 +318,28 @@ crete_templates.create_aver_template(path)
 # In[ ]:
 
 
+tmp_a, tmp_b = crete_templates.check_info()
+
+
+# In[ ]:
+
+
+tmp_b
+
+
+# In[ ]:
 
 
 
-# crete_templates.generate_frames('all', 0, 'battle_data_start_allies', inp_sub_path='battle_data_start_allies')
-# crete_templates.generate_frames('all', 0, 'battle_data_start_enemies', inp_sub_path='battle_data_start_enemies')
 
+
+# In[ ]:
+
+
+
+
+crete_templates.generate_frames('all', 0, 'battle_data_start_allies', inp_sub_path='battle_data_start_allies')  
+crete_templates.generate_frames('all', 0, 'battle_data_start_enemies', inp_sub_path='battle_data_start_enemies')
 # In[ ]:
 
 
