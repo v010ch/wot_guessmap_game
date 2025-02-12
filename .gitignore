@@ -2,10 +2,12 @@
 __pycache__/
 
 downloads/
-data*
+
+data
+!data/templates/*.png
+
 res/*
 models/*
-
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -14,28 +16,13 @@ models/*
 #profile_default/
 #ipython_config.py
 
-# Spyder project settings
-.spyderproject
-.spyproject
 
-
+*tmp*
 tst_*
 test_*
-*tmp*
 log_*
 
 *.bat
 *.sh
 
-
-catboost_info
-
-
-test*
-train*
-
-
-*.zip
-answ*
 todo.py
-
