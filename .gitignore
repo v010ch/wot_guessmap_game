@@ -3,7 +3,9 @@ __pycache__/
 
 downloads/
 
-data
+data/*
+data/*
+!data/templates
 !data/templates/*.png
 
 res/*
