@@ -1,12 +1,13 @@
+''''''
 #!/usr/bin/env python
 # coding: utf-8
 import os
 import json
 
 
-
 def collect_map_names(inp_path: str) -> tuple[list, dict, dict]:
-
+    '''
+    '''
     all_map_names = []
     maps_numb = dict()
     ru_map_names = dict()
@@ -32,9 +33,9 @@ def collect_map_names(inp_path: str) -> tuple[list, dict, dict]:
     return all_map_names, maps_numb, ru_map_names
 
 
-
 def create_map_info_json(path_to_wot_res_packages: str) -> None:
-
+    '''
+    '''
     if not os.path.exists(path_to_wot_res_packages):
         print('Wrong path to wot res packages. Retire!')
         return -1
@@ -58,9 +59,9 @@ def create_map_info_json(path_to_wot_res_packages: str) -> None:
     return 0
 
 
-
 def create_path_structure():
-
+    '''
+    '''
     if not os.path.exists(os.path.join('.', 'data')):
         os.mkdir(os.path.join('.', 'data'))
         assert os.path.exists(os.path.join('.', 'data')), 'Cannot create dir'
